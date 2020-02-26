@@ -1,23 +1,23 @@
 name: Node CI
 
 on:
-push:
+  push:
     branches:
     - master
     - release/*
 
 jobs:
-build:
+  build:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v1
     - name: Use Node.js 10.x
-        uses: actions/setup-node@v1
-        with:
+      uses: actions/setup-node@v1
+      with:
         node-version: 10.x
     - name: npm install, lint, test, build and deploy
-        run: |
+      run: |
         npm install
         npm run lint
         ###
@@ -26,6 +26,6 @@ build:
         npm test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
         npm run e2e -- --protractor-config=e2e/protractor-ci.conf.js
         npm run deploy -- --name="marcus-bcl" --email="maspin@unilink.com"
-        env:
+      env:
         CI: true
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
