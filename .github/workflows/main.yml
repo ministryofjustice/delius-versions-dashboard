@@ -20,7 +20,7 @@ jobs:
       run: |
         npm install
         npm run lint
-        npm run deploy -- --name="marcus-bcl" --email="maspin@unilink.com"
+        npm run deploy -- --name="marcus-bcl" --email="maspin@unilink.com" --base-href=https://ministryofjustice.github.io/delius-versions-dashboard/
       env:
         CI: true
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
