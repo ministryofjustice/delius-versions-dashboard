@@ -6,6 +6,7 @@ import {EnvironmentConfig} from './model/environment-config';
 import {HttpClient} from '@angular/common/http';
 import {EventEmitter, Injectable} from '@angular/core';
 import {ConfigFiles, EnvironmentConfigFiles} from './model/config-files';
+import {safeLoad} from 'js-yaml';
 
 declare var parse: (hcl: string) => object;
 
@@ -51,11 +52,7 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
     // Create a data stream that emits the config values on a regular timer
     const dataStream: Observable<EnvironmentConfig[]> = timer(0, this.updateInterval).pipe(
       // Fetch config files
-      switchMap(() => forkJoin({
-        common: this.getTfVars('/common/common.tfvars'),
-        commonProd: this.getTfVars('/common-prod/common.tfvars'),
-        environments: forkJoin(this.environments.map(env => this.getEnvironmentConfigFiles(env))).pipe(this.arrayToMap())
-      })),
+      switchMap(() => this.getConfigFiles()),
       // Map into table data
       map((files: ConfigFiles) => this.environments.map(env => this.mapToEnvironmentConfig(env, files))),
       tap(data => this.data = data));
@@ -74,12 +71,24 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
 
   disconnect() {}
 
+  private getConfigFiles(): Observable<ConfigFiles> {
+    // Concurrently lookup each config file and return the combined result
+    return forkJoin({
+      common: this.getTfVars('/common/common.tfvars'),
+      commonProd: this.getTfVars('/common-prod/common.tfvars'),
+      groupVarsAll: this.getYaml('/ansible/group_vars/all.yml'),
+      environments: forkJoin(this.environments.map(env => this.getEnvironmentConfigFiles(env))).pipe(this.arrayToMap())
+    });
+  }
+
   private getEnvironmentConfigFiles(environmentName: string): Observable<EnvironmentConfigFiles> {
     // Concurrently lookup each config file and return the combined result
     return forkJoin({
       name: of(environmentName),
       isProd: this.isProd(environmentName),
-      deliusCore: this.getTfVars('/' + environmentName + '/sub-projects/delius-core.tfvars')
+      deliusCore: this.getTfVars('/' + environmentName + '/sub-projects/delius-core.tfvars'),
+      groupVarsAll: this.getYaml('/' + environmentName + '/ansible/group_vars/all.yml'),
+      groupVarsLdap: this.getYaml('/' + environmentName + '/ansible/group_vars/ldap.yml')
     });
   }
 
@@ -90,8 +99,15 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
       ...(envFiles.isProd ? files.commonProd : files.common),
       ...envFiles.deliusCore,
     };
+    const ansibleVars: any = {
+      ...files.groupVarsAll,
+      ...envFiles.groupVarsAll,
+      ...envFiles.groupVarsLdap
+    };
     return {
       name,
+      delius: ansibleVars.ndelius_version,
+      rbac: ansibleVars.ldap_config.rbac_version,
       umt: tfvars.umt_config[0].version || tfvars.default_umt_config[0].version,
       gdpr_ui: tfvars.gdpr_config[0].ui_version || tfvars.default_gdpr_config[0].ui_version,
       gdpr_api: tfvars.gdpr_config[0].api_version || tfvars.default_gdpr_config[0].api_version,
@@ -102,6 +118,11 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
   private getTfVars(path: string): Observable<object> {
     return this.http.get<string>(this.url + path, {responseType: 'text' as 'json'})
       .pipe(map(res => parse(res)[0]));
+  }
+
+  private getYaml(path: string): Observable<object> {
+    return this.http.get<string>(this.url + path, {responseType: 'text' as 'json'})
+      .pipe(map(res => safeLoad(res)));
   }
 
   private isProd(environmentName: string): Observable<boolean> {
