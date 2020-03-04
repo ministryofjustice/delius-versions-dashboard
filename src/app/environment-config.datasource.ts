@@ -106,6 +106,7 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
     };
     return {
       name,
+      data: envFiles.isProd ? 'Production' : 'Test',
       delius: ansibleVars.ndelius_version,
       rbac: ansibleVars.ldap_config.rbac_version,
       umt: tfvars.umt_config[0].version || tfvars.default_umt_config[0].version,
@@ -128,7 +129,7 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
   private isProd(environmentName: string): Observable<boolean> {
     return this.http.get<string>(
       this.url + '/' + environmentName + '/' + environmentName + '.properties', {responseType: 'text' as 'json'})
-      .pipe(map(res => res.indexOf('common-prod') !== -1));
+      .pipe(map(res => res.indexOf('"common-prod"') !== -1));
   }
 
   private getSortedData(data: EnvironmentConfig[]) {
