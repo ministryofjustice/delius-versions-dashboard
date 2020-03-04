@@ -18,7 +18,7 @@ jobs:
         npm run lint
         npm run build
     - name: npm deploy
-      if: contains(github.ref, "master")
+      if: contains(github.ref, 'master')
       run: |
         npm run deploy -- --name="marcus-bcl" --email="maspin@unilink.com" --base-href=https://ministryofjustice.github.io/delius-versions-dashboard/
       env:
