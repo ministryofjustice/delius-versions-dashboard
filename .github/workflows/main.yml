@@ -1,10 +1,6 @@
 name: Node CI
 
-on:
-  push:
-    branches:
-    - master
-    - release/*
+on: push
 
 jobs:
   build:
@@ -16,10 +12,14 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 10.x
-    - name: npm install, lint, build and deploy
+    - name: npm install, lint, build
       run: |
         npm install
         npm run lint
+        npm run build
+    - name: npm deploy
+      if: contains(github.ref, "master")
+      run: |
         npm run deploy -- --name="marcus-bcl" --email="maspin@unilink.com" --base-href=https://ministryofjustice.github.io/delius-versions-dashboard/
       env:
         CI: true
