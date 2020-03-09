@@ -5,6 +5,8 @@ Dashboard: https://ministryofjustice.github.io/delius-versions-dashboard
 This project fetches and consolidates information from the [hmpps-env-configs](https://github.com/ministryofjustice/hmpps-env-configs) repository,
 to provide a quick high-level view of which application versions are deployed in the Delius AWS environments.
 
+Note: In the case where the configuration has been updated but those changes have not yet been applied to the environment, the versions displayed on the dashboard may be temporarily incorrect.
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
@@ -12,6 +14,8 @@ Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app w
 ## Code scaffolding
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+
+This project was initially generated using the [Angular Material Table Schematic](https://material.angular.io/guide/schematics#table-schematic): `ng generate @angular/material:table app`.
 
 ## Build
 
