@@ -17,7 +17,7 @@ declare var parse: (hcl: string) => object;
  */
 @Injectable()
 export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
-  updateInterval = 5000; // ms
+  updateInterval = 60_000; // ms
   environments = [
     'delius-core-dev',
     'delius-auto-test',
