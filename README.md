@@ -2,7 +2,7 @@
 
 Dashboard: https://ministryofjustice.github.io/delius-versions-dashboard
 
-This project fetches and consolidates information from the [hmpps-env-configs](https://github.com/ministryofjustice/hmpps-env-configs) repository,
+This project fetches and consolidates information from the [hmpps-env-configs](https://github.com/ministryofjustice/hmpps-env-configs) and the [delius-versions](https://github.com/ministryofjustice/delius-versions) repositories,
 to provide a quick high-level view of which application versions are deployed in the Delius AWS environments.
 
 Note: In the case where the configuration has been updated but those changes have not yet been applied to the environment, the versions displayed on the dashboard may be temporarily incorrect.

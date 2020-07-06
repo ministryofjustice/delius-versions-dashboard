@@ -7,6 +7,7 @@ export interface EnvironmentConfigFiles {
 }
 
 export interface ConfigFiles {
+  versions: object;
   common: object;
   commonProd: object;
   groupVarsAll: object;
