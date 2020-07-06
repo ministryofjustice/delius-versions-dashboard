@@ -31,8 +31,8 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
     'delius-pre-prod',
     'delius-prod'
   ];
-  config_repo = 'https://raw.githubusercontent.com/ministryofjustice/hmpps-env-configs/master';
-  versions_repo = 'https://raw.githubusercontent.com/ministryofjustice/delius-versions/master';
+  configRepo = 'https://raw.githubusercontent.com/ministryofjustice/hmpps-env-configs/master';
+  versionsRepo = 'https://raw.githubusercontent.com/ministryofjustice/delius-versions/master';
 
   sort: MatSort;
 
@@ -74,9 +74,9 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
   private getConfigFiles(): Observable<ConfigFiles> {
     // Concurrently lookup each config file and return the combined result
     return forkJoin({
-      versions: this.getTfVars(this.versions_repo + '/config/020-delius-core.tfvars'),
-      common: this.getTfVars(this.config_repo + '/common/common.tfvars'),
-      commonProd: this.getTfVars(this.config_repo + '/common-prod/common.tfvars'),
+      versions: this.getTfVars(this.versionsRepo + '/config/020-delius-core.tfvars'),
+      common: this.getTfVars(this.configRepo + '/common/common.tfvars'),
+      commonProd: this.getTfVars(this.configRepo + '/common-prod/common.tfvars'),
       groupVarsAll: this.getYaml('/ansible/group_vars/all.yml'),
       environments: forkJoin(this.environments.map(env => this.getEnvironmentConfigFiles(env))).pipe(this.arrayToMap())
     });
@@ -87,7 +87,7 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
     return forkJoin({
       name: of(environmentName),
       isProd: this.isProd(environmentName),
-      deliusCore: this.getTfVars(this.config_repo + '/' + environmentName + '/sub-projects/delius-core.tfvars'),
+      deliusCore: this.getTfVars(this.configRepo + '/' + environmentName + '/sub-projects/delius-core.tfvars'),
       groupVarsAll: this.getYaml('/' + environmentName + '/ansible/group_vars/all.yml'),
       groupVarsLdap: this.getYaml('/' + environmentName + '/ansible/group_vars/ldap.yml')
     });
@@ -114,8 +114,8 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
       gdpr_ui: tfvars.gdpr_config[0].ui_version || tfvars.default_gdpr_config[0].ui_version,
       gdpr_api: tfvars.gdpr_config[0].api_version || tfvars.default_gdpr_config[0].api_version,
       aptracker_api: tfvars.aptracker_api_config[0].version || tfvars.default_aptracker_api_config[0].version,
-      infrastructure: files.versions["hmpps-delius-core-terraform"][0][name] || 'latest',
-      env_config: files.versions["delius-core-hmpps-env-configs"][0][name] || 'latest'
+      infrastructure: files.versions['hmpps-delius-core-terraform'][0][name] || 'latest',
+      env_config: files.versions['delius-core-hmpps-env-configs'][0][name] || 'latest'
     };
   }
 
@@ -125,13 +125,13 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
   }
 
   private getYaml(path: string): Observable<object> {
-    return this.http.get<string>(this.config_repo + path, {responseType: 'text' as 'json'})
+    return this.http.get<string>(this.configRepo + path, {responseType: 'text' as 'json'})
       .pipe(map(res => safeLoad(res)));
   }
 
   private isProd(environmentName: string): Observable<boolean> {
     return this.http.get<string>(
-      this.config_repo + '/' + environmentName + '/' + environmentName + '.properties', {responseType: 'text' as 'json'})
+      this.configRepo + '/' + environmentName + '/' + environmentName + '.properties', {responseType: 'text' as 'json'})
       .pipe(map(res => res.indexOf('"common-prod"') !== -1));
   }
 
