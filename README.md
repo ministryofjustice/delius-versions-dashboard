@@ -31,7 +31,7 @@ Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protrac
 
 ## Continuous Integration
 
-This project uses GitHub Actions ([workflow](.github/workflows/main.yml)), to automatically compile the Angular/Typescript code when pushing to the master branch, so that the latest code is immediately available on GitHub Pages.
+This project uses GitHub Actions ([workflow](.github/workflows/main.yml)), to automatically compile the Angular/Typescript code when pushing to the default branch, so that the latest code is immediately available on GitHub Pages.
 
 ## Further help
 
