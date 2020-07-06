@@ -31,8 +31,8 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
     'delius-pre-prod',
     'delius-prod'
   ];
-  configRepo = 'https://raw.githubusercontent.com/ministryofjustice/hmpps-env-configs/master';
-  versionsRepo = 'https://raw.githubusercontent.com/ministryofjustice/delius-versions/master';
+  configRepo: string;
+  versionsRepo: string;
 
   sort: MatSort;
 
@@ -51,6 +51,11 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
   connect(): Observable<EnvironmentConfig[]> {
     // Create a data stream that emits the config values on a regular timer
     const dataStream: Observable<EnvironmentConfig[]> = timer(0, this.updateInterval).pipe(
+      // Get repo urls
+      switchMap(() => forkJoin([
+        this.repoUrl('hmpps-env-configs').pipe(tap(url => this.configRepo = url)),
+        this.repoUrl('delius-versions').pipe(tap(url => this.versionsRepo = url)),
+      ])),
       // Fetch config files
       switchMap(() => this.getConfigFiles()),
       // Map into table data
@@ -144,5 +149,10 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
 
   private arrayToMap() {
     return map((envArr: EnvironmentConfigFiles[]) => new Map(envArr.map(env => [env.name, env])));
+  }
+
+  private repoUrl(repo: string): Observable<string> {
+    return this.http.get<any>('https://api.github.com/repos/ministryofjustice/' + repo)
+      .pipe(map(res => 'https://raw.githubusercontent.com/ministryofjustice/' + repo + '/' + res.default_branch));
   }
 }
