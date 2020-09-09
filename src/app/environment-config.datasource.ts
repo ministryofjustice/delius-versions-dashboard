@@ -19,16 +19,22 @@ declare var parse: (hcl: string) => object;
 export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
   updateInterval = 60e3; // ms
   environments = [
+    // Dev
+    'delius-core-sandpit',
     'delius-core-dev',
-    'delius-test',
-    'delius-int',
-    'delius-po-test1',
     'delius-mis-dev',
+    // Test
+    'delius-auto-test',
+    'delius-int',
+    'delius-test',
+    'delius-po-test1',
     'delius-training-test',
-    'delius-training',
-    'delius-stage',
     'delius-perf',
+    // Pre-Prod
+    'delius-stage',
     'delius-pre-prod',
+    // Prod
+    'delius-training',
     'delius-prod'
   ];
   configRepo: string;
