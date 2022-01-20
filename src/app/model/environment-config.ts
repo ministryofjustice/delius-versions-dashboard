@@ -6,7 +6,6 @@ export interface EnvironmentConfig {
   delius: string;
   rbac: string;
   umt: string;
-  gdpr_ui: string;
   gdpr_api: string;
-  aptracker_api: string;
+  merge_api: string;
 }
