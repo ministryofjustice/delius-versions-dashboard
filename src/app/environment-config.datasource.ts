@@ -121,8 +121,12 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
       delius: ansibleVars.ndelius_version,
       rbac: ansibleVars.ldap_config.rbac_version,
       umt: tfvars.umt_config[0].version || tfvars.default_umt_config[0].version,
-      gdpr_api: tfvars.gdpr_config[0].api_version || tfvars.default_gdpr_config[0].api_version,
-      merge_api: tfvars.merge_config[0].api_version || tfvars.default_merge_config[0].api_version,
+      'gdpr (api/ui)':
+        (tfvars.gdpr_config[0].api_version || tfvars.default_gdpr_config[0].api_version) + ' / ' +
+        (tfvars.gdpr_config[0].ui_version || tfvars.default_gdpr_config[0].ui_version),
+      'merge (api/ui)':
+        (tfvars.merge_config[0].api_version || tfvars.default_merge_config[0].api_version) + ' / ' +
+        (tfvars.merge_config[0].ui_version || tfvars.default_merge_config[0].ui_version),
       infrastructure: files.versions['hmpps-delius-core-terraform'][0][name] || 'latest',
       env_config: files.versions['delius-core-hmpps-env-configs'][0][name] || 'latest'
     };
