@@ -1,6 +1,6 @@
 import {DataSource} from '@angular/cdk/collections';
 import {MatSort} from '@angular/material/sort';
-import {map, switchMap, tap} from 'rxjs/operators';
+import {map, switchMap, tap, catchError} from 'rxjs/operators';
 import {forkJoin, merge, Observable, of, timer} from 'rxjs';
 import {EnvironmentConfig} from './model/environment-config';
 import {HttpClient} from '@angular/common/http';
@@ -99,7 +99,9 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
       isProd: this.isProd(environmentName),
       deliusCore: this.getTfVars(this.configRepo + '/' + environmentName + '/sub-projects/delius-core.tfvars'),
       groupVarsAll: this.getYaml('/' + environmentName + '/ansible/group_vars/all.yml'),
-      groupVarsLdap: this.getYaml('/' + environmentName + '/ansible/group_vars/ldap.yml')
+      groupVarsLdap: this.getYaml('/' + environmentName + '/ansible/group_vars/ldap.yml'),
+      groupVarsOracleDelius: this.getYaml('/' + environmentName + '/ansible/group_vars/delius_primarydb.yml'),
+      groupVarsOracleMIS: this.getOptionalMISYaml('/' + environmentName + '/ansible/group_vars/mis_primarydb.yml')
     });
   }
 
@@ -115,6 +117,13 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
       ...envFiles.groupVarsAll,
       ...envFiles.groupVarsLdap
     };
+    const ansibleDeliusVars: any = {
+      ...files.groupVarsAll,
+      ...envFiles.groupVarsOracleDelius
+    };
+    const ansibleMISVars: any = {
+      ...envFiles.groupVarsOracleMIS
+    };
     return {
       name,
       data: envFiles.isProd ? 'Production' : 'Test',
@@ -128,7 +137,9 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
         (tfvars.merge_config[0].api_version || tfvars.default_merge_config[0].api_version) + ' / ' +
         (tfvars.merge_config[0].ui_version || tfvars.default_merge_config[0].ui_version),
       infrastructure: files.versions['hmpps-delius-core-terraform'][0][name] || 'latest',
-      env_config: files.versions['delius-core-hmpps-env-configs'][0][name] || 'latest'
+      env_config: files.versions['delius-core-hmpps-env-configs'][0][name] || 'latest',
+      'oracle (delius/mis)': ( ansibleDeliusVars.oracle_software && ansibleDeliusVars.oracle_software.version || 'unknown' ) + ' / ' +
+         ( ansibleMISVars.oracle_software && ansibleMISVars.oracle_software.version || 'unknown' )
     };
   }
 
@@ -140,6 +151,13 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
   private getYaml(path: string): Observable<object> {
     return this.http.get<string>(this.configRepo + path, {responseType: 'text' as 'json'})
       .pipe(map(res => safeLoad(res)));
+  }
+ 
+ private getOptionalMISYaml(path: string): Observable<object> {
+    return this.http.get<string>(this.configRepo + path, {responseType: 'text' as 'json'})
+      .pipe(tap(),catchError((err) => {
+        return of(JSON.stringify( new String('{oracle_software: {version: "None"}}'))).pipe(map(res => safeLoad(res)));
+      })).pipe(map(res => safeLoad(res)));
   }
 
   private isProd(environmentName: string): Observable<boolean> {
@@ -161,6 +179,6 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
 
   private repoUrl(repo: string): Observable<string> {
     return this.http.get<any>('https://api.github.com/repos/ministryofjustice/' + repo)
-      .pipe(map(res => 'https://raw.githubusercontent.com/ministryofjustice/' + repo + '/' + res.default_branch));
+      .pipe(map(res => 'https://raw.githubusercontent.com/ministryofjustice/' + repo + '/' + 'DBA-91'));
   }
 }
