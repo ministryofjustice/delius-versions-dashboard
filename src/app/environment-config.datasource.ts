@@ -153,7 +153,7 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
       .pipe(map(res => safeLoad(res)));
   }
  
- private getOptionalMISYaml(path: string): Observable<object> {
+  private getOptionalMISYaml(path: string): Observable<object> {
     return this.http.get<string>(this.configRepo + path, {responseType: 'text' as 'json'})
       .pipe(tap(),catchError((err) => {
         return of(JSON.stringify( new String('{oracle_software: {version: "None"}}'))).pipe(map(res => safeLoad(res)));
