@@ -179,6 +179,6 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
 
   private repoUrl(repo: string): Observable<string> {
     return this.http.get<any>('https://api.github.com/repos/ministryofjustice/' + repo)
-      .pipe(map(res => 'https://raw.githubusercontent.com/ministryofjustice/' + repo + '/' + 'DBA-91'));
+      .pipe(map(res => 'https://raw.githubusercontent.com/ministryofjustice/' + repo + '/' + res.default_branch));
   }
 }
