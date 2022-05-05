@@ -1,6 +1,6 @@
 import {DataSource} from '@angular/cdk/collections';
 import {MatSort} from '@angular/material/sort';
-import {map, switchMap, tap, catchError} from 'rxjs/operators';
+import {catchError, map, switchMap, tap} from 'rxjs/operators';
 import {forkJoin, merge, Observable, of, timer} from 'rxjs';
 import {EnvironmentConfig} from './model/environment-config';
 import {HttpClient} from '@angular/common/http';
@@ -101,7 +101,8 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
       groupVarsAll: this.getYaml('/' + environmentName + '/ansible/group_vars/all.yml'),
       groupVarsLdap: this.getYaml('/' + environmentName + '/ansible/group_vars/ldap.yml'),
       groupVarsOracleDelius: this.getYaml('/' + environmentName + '/ansible/group_vars/delius_primarydb.yml'),
-      groupVarsOracleMIS: this.getOptionalMISYaml('/' + environmentName + '/ansible/group_vars/mis_primarydb.yml')
+      groupVarsOracleMIS: this.getOptionalYaml('/' + environmentName + '/ansible/group_vars/mis_primarydb.yml',
+                                               {oracle_software: {version: 'None'}})
     });
   }
 
@@ -138,8 +139,9 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
         (tfvars.merge_config[0].ui_version || tfvars.default_merge_config[0].ui_version),
       infrastructure: files.versions['hmpps-delius-core-terraform'][0][name] || 'latest',
       env_config: files.versions['delius-core-hmpps-env-configs'][0][name] || 'latest',
-      'oracle (delius/mis)': ( ansibleDeliusVars.oracle_software && ansibleDeliusVars.oracle_software.version || 'unknown' ) + ' / ' +
-         ( ansibleMISVars.oracle_software && ansibleMISVars.oracle_software.version || 'unknown' )
+      'oracle (delius/mis)':
+        (ansibleDeliusVars.oracle_software?.version || 'unknown') + ' / ' +
+        (ansibleMISVars.oracle_software?.version || 'unknown')
     };
   }
 
@@ -153,11 +155,12 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
       .pipe(map(res => safeLoad(res)));
   }
 
-  private getOptionalMISYaml(path: string): Observable<object> {
+  private getOptionalYaml(path: string, defaultValue: object): Observable<object> {
     return this.http.get<string>(this.configRepo + path, {responseType: 'text' as 'json'})
-      .pipe(tap(), catchError((err) => {
-        return of(JSON.stringify('{oracle_software: {version: "None"}}')).pipe(map(res => safeLoad(res)));
-      })).pipe(map(res => safeLoad(res)));
+      .pipe(
+        catchError(() => of(JSON.stringify(defaultValue))),
+        map(res => safeLoad(res))
+      );
   }
 
   private isProd(environmentName: string): Observable<boolean> {
