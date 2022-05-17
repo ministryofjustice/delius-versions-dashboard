@@ -4,6 +4,8 @@ export interface EnvironmentConfigFiles {
   deliusCore: object;
   groupVarsAll: object;
   groupVarsLdap: object;
+  groupVarsOracleDelius: object;
+  groupVarsOracleMIS: object;
 }
 
 export interface ConfigFiles {

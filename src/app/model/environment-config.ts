@@ -8,4 +8,5 @@ export interface EnvironmentConfig {
   umt: string;
   'gdpr (api/ui)': string;
   'merge (api/ui)': string;
+  'oracle (delius/mis)': string;
 }
