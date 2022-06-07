@@ -25,7 +25,6 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
     'delius-mis-dev',
     // Test
     'delius-test',
-    'delius-po-test1',
     'delius-training-test',
     // Pre-Prod
     'delius-training',
