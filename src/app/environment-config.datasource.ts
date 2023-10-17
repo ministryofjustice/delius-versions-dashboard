@@ -20,7 +20,6 @@ export class EnvironmentConfigDatasource extends DataSource<EnvironmentConfig> {
   updateInterval = 60e3; // ms
   environments = [
     // Dev
-    'delius-core-dev',
     'delius-mis-dev',
     // Test
     'delius-test',
